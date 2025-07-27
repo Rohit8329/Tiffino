@@ -1,0 +1,256 @@
+version: '3.8'
+
+services:
+  # Database Service
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_INITDB_SKIP_TZINFO: 1
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - tiffino-net
+
+  # Service Discovery
+  eureka-server:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/Eureka.Dockerfile
+    container_name: eureka-server
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8990:8990"
+    networks:
+      - tiffino-net
+    depends_on:
+      - mysql-db
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/api-gateway.Dockerfile
+    container_name: api-gateway
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8800:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+
+  # User Service
+  user-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/userservice.Dockerfile
+    container_name: userservice
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/userdbfinal?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8890:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+      - mysql-db
+
+  # Payment Service
+  payment-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/payment-service.Dockerfile
+    container_name: payment-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/paymentdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8930:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+      - mysql-db
+    restart: unless-stopped
+
+  # Menu Service
+  menu-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/menu-service.Dockerfile
+    container_name: menu-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/menudb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8920:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # Delivery Service
+  delivery-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/delivery-service.Dockerfile
+    container_name: delivery-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/deliverydb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8970:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # Notification Service
+  notification-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/notification-service.Dockerfile
+    container_name: notification-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/notificationdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8980:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # Loyalty Service
+  loyalty-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/loyalty-service.Dockerfile
+    container_name: loyalty-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/loyaltydb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8940:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/order-service.Dockerfile
+    container_name: order-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/orderdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8910:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # Review Service
+  review-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/review-service.Dockerfile
+    container_name: review-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/reviewdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8950:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # Subscription Service
+  subscription-service:
+    build:
+      context: .
+      dockerfile: ../backend/Dockerfiles/subscription-service.Dockerfile
+    container_name: subscription-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/subscriptiondb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8990/eureka
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=true
+      - EUREKA_CLIENT_FETCH_REGISTRY=true
+    ports:
+      - "8960:8080"
+    networks:
+      - tiffino-net
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    image: pmasne98/frontend:t2
+    container_name: frontend
+    ports:
+      - "8085:80"
+    networks:
+      - tiffino-net
+
+networks:
+  tiffino-net:
+
+volumes:
+  mysql-data:
+
