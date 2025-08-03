@@ -1,0 +1,5 @@
+suppose you build an image names with frontend:tf2
+docker build -t frotend:tf2 .
+docker image ls
+docker tag frontend:tf2 rohit151/frontend:tf2 ----> #Tag your local image with 
+docker push rohit151/frontend:tf2
